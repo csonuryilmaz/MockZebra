@@ -72,8 +72,7 @@ public class MockZebra
 	info("Welcome to MockZebra App! (v " + VERSION + ")");
 
 	Config config = new Config(getConfigFile(cmdLine));
-	System.out.println(config.getPort());
-
+	Socket socket = new Socket(config);
     }
 
     private static String getConfigFile(CommandLine cmdLine)
