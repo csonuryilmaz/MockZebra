@@ -402,6 +402,10 @@ public class Log
 		builder.append(writer.toString().trim());
 	    }
 	    System.out.println(builder);
+	    if (level == Log.LEVEL_ERROR)
+	    {
+		System.exit(-1);
+	    }
 	}
     }
 }
