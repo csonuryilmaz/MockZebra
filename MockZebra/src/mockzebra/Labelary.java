@@ -17,19 +17,31 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 class Labelary
 {
 
+    private final Invocation.Builder request;
+    private final String extension;
+
     Labelary(Config config)
     {
+	Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
+	WebTarget target = client.target("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+	// adjust print density (8dpmm), label width (4 inches), label height (6 inches), and label index (0) as necessary
+	request = target.request();
+	if (config.isLabelSaveAsPdf())
+	{
+	    request.accept("application/pdf");
+	    extension = "pdf";
+	}
+	else
+	{
+	    request.accept("image/png");
+	    extension = "png";
+	}
     }
 
     void listen(Socket socket)
     {
 	String zpl = "^xa^cfa,50^fo100,100^fdHello World^fs^xz";
 
-	Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
-// adjust print density (8dpmm), label width (4 inches), label height (6 inches), and label index (0) as necessary
-	WebTarget target = client.target("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
-	Invocation.Builder request = target.request();
-	request.accept("application/pdf"); // omit this line to get PNG images back
 	Response response = request.post(Entity.entity(zpl, MediaType.APPLICATION_FORM_URLENCODED));
 
 	if (response.getStatus() == 200)
@@ -37,7 +49,7 @@ class Labelary
 	    try
 	    {
 		byte[] body = response.readEntity(byte[].class);
-		File file = new File("label.pdf"); // change file name for PNG images
+		File file = new File("label." + extension);
 		Files.write(file.toPath(), body);
 	    }
 	    catch (IOException ex)

@@ -12,6 +12,8 @@ class Config
 
     private int port;
 
+    private boolean labelSaveAsPdf;
+
     Config(String file)
     {
 	String workspace = new File(MockZebra.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
@@ -28,6 +30,7 @@ class Config
 	    prop.load(new FileInputStream(workspace + "/" + file));
 
 	    setPort(prop);
+	    setLabelSaveAsPdf(prop);
 	}
 	catch (IOException ex)
 	{
@@ -60,6 +63,34 @@ class Config
     int getPort()
     {
 	return port;
+    }
+
+    private void setLabelSaveAsPdf(Properties prop)
+    {
+	String saveAs = prop.getProperty("LABEL_SAVE_AS");
+	if (saveAs != null && saveAs.length() > 0)
+	{
+	    saveAs = saveAs.toLowerCase().trim();
+	    if (saveAs.equals("pdf") || saveAs.equals("png"))
+	    {
+		labelSaveAsPdf = saveAs.equals("pdf");
+	    }
+	    else
+	    {
+		info("LABEL_SAVE_AS value, " + saveAs + " from config, can't be used. Default value PNG will be used.");
+		labelSaveAsPdf = false;
+	    }
+	}
+	else
+	{
+	    info("No LABEL_SAVE_AS value from config. Default value PNG will be used.");
+	    labelSaveAsPdf = false;
+	}
+    }
+
+    boolean isLabelSaveAsPdf()
+    {
+	return labelSaveAsPdf;
     }
 
 }
