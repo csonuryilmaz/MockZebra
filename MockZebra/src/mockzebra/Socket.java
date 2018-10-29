@@ -19,6 +19,8 @@ class Socket
 
     private String workspace;
 
+    private ISocketListener listener;
+
     Socket(Config config)
     {
 	setWorkspace();
@@ -26,7 +28,7 @@ class Socket
 	{
 	    ServerSocket serverSocket = new ServerSocket(config.getPort());
 	    info("Socket listening from port " + config.getPort() + " ...");
-	    listen(serverSocket);
+	    start(serverSocket);
 	}
 	catch (IOException ex)
 	{
@@ -34,7 +36,7 @@ class Socket
 	}
     }
 
-    private void listen(ServerSocket serverSocket)
+    private void start(ServerSocket serverSocket)
     {
 	new Thread()
 	{
@@ -63,6 +65,10 @@ class Socket
 			info("Message is got, " + messageId + ".zpl flushing to file ...");
 			saveMessage(messageId, buffer.toString());
 			info("" + messageId + ".zpl saved.");
+			if (listener != null)
+			{
+			    listener.messageGot(messageId, workspace, messageId + ".zpl");
+			}
 		    }
 		    catch (IOException ex)
 		    {
@@ -128,6 +134,11 @@ class Socket
 		warn(ex.getMessage());
 	    }
 	}
+    }
+
+    void setListener(ISocketListener listener)
+    {
+	this.listener = listener;
     }
 
 }

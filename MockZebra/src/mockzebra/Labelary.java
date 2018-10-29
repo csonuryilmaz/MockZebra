@@ -1,8 +1,12 @@
 package mockzebra;
 
+import static com.esotericsoftware.minlog.Log.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.client.Client;
@@ -14,7 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
-class Labelary
+class Labelary implements ISocketListener
 {
 
     private final Invocation.Builder request;
@@ -40,29 +44,56 @@ class Labelary
 
     void listen(Socket socket)
     {
-	String zpl = "^xa^cfa,50^fo100,100^fdHello World^fs^xz";
+	socket.setListener(this);
+    }
 
-	Response response = request.post(Entity.entity(zpl, MediaType.APPLICATION_FORM_URLENCODED));
-
-	if (response.getStatus() == 200)
+    @Override
+    public void messageGot(int messageId, String workspace, String zplFile)
+    {
+	try
 	{
-	    try
+	    String zpl = getZpl(workspace, zplFile, StandardCharsets.UTF_8);
+	    info("Rendering " + zplFile + " ...");
+	    Response response = request.post(Entity.entity(zpl, MediaType.APPLICATION_FORM_URLENCODED));
+	    if (response.getStatus() == 200)
 	    {
-		byte[] body = response.readEntity(byte[].class);
-		File file = new File("label." + extension);
-		Files.write(file.toPath(), body);
+		info("Success.");
+		saveLabel(workspace, messageId, response);
 	    }
-	    catch (IOException ex)
+	    else
 	    {
-		Logger.getLogger(Labelary.class.getName()).log(Level.SEVERE, null, ex);
+		String body = response.readEntity(String.class);
+		System.out.println("Error: " + body);
 	    }
 	}
-	else
+	catch (IOException ex)
 	{
-	    String body = response.readEntity(String.class);
-	    System.out.println("Error: " + body);
+	    warn("Zpl content could not be read from file:" + workspace + "/" + zplFile);
+	    warn(zplFile + ":" + ex.getMessage());
 	}
+    }
 
+    private String getZpl(String workspace, String zplFile, Charset encoding) throws IOException
+    {
+	byte[] encoded = Files.readAllBytes(Paths.get(workspace + "/" + zplFile));
+	return new String(encoded, encoding);
+    }
+
+    private void saveLabel(String workspace, int messageId, Response response)
+    {
+	String labelPath = workspace + "/" + messageId + "." + extension;
+	try
+	{
+	    byte[] body = response.readEntity(byte[].class);
+	    File file = new File(labelPath);
+	    Files.write(file.toPath(), body);
+	    info("Label saved as " + messageId + "." + extension + " in workspace.");
+	}
+	catch (IOException ex)
+	{
+	    warn("Label could not be saved as:" + labelPath);
+	    warn(ex.getMessage());
+	}
     }
 
 }
