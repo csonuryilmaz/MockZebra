@@ -7,8 +7,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -27,7 +25,7 @@ class Labelary implements ISocketListener
     Labelary(Config config)
     {
 	Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
-	WebTarget target = client.target("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+	WebTarget target = client.target("http://api.labelary.com/v1/printers/" + config.getPrintDensity() + "/labels/4x6/0/");
 	// adjust print density (8dpmm), label width (4 inches), label height (6 inches), and label index (0) as necessary
 	request = target.request();
 	if (config.isLabelSaveAsPdf())

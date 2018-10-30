@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static com.esotericsoftware.minlog.Log.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import org.apache.commons.lang3.StringUtils;
 
 class Config
 {
@@ -13,6 +16,45 @@ class Config
     private int port;
 
     private boolean labelSaveAsPdf;
+    private String printDensity;
+
+    private final static HashSet<String> PRINT_DENSITY_UNITS = new HashSet<String>()
+    {
+	{
+	    add("dpmm");
+	    add("dpi");
+	}
+    };
+
+    private final static HashSet<Integer> PRINT_DENSITY_DPMM_VALUES = new HashSet<Integer>()
+    {
+	{
+	    add(6);
+	    add(8);
+	    add(12);
+	    add(24);
+	}
+    };
+
+    private final static HashSet<Integer> PRINT_DENSITY_DPI_VALUES = new HashSet<Integer>()
+    {
+	{
+	    add(152);
+	    add(203);
+	    add(300);
+	    add(600);
+	}
+    };
+
+    private final static HashMap<Integer, Integer> PRINT_DENSITY_DPI_DPMM_MAP = new HashMap<Integer, Integer>()
+    {
+	{
+	    put(152, 6);
+	    put(203, 8);
+	    put(300, 12);
+	    put(600, 24);
+	}
+    };
 
     Config(String file)
     {
@@ -31,6 +73,7 @@ class Config
 
 	    setPort(prop);
 	    setLabelSaveAsPdf(prop);
+	    setPrintDensity(prop);
 	}
 	catch (IOException ex)
 	{
@@ -91,6 +134,64 @@ class Config
     boolean isLabelSaveAsPdf()
     {
 	return labelSaveAsPdf;
+    }
+
+    String getPrintDensity()
+    {
+	return printDensity;
+    }
+
+    private void setPrintDensity(Properties prop)
+    {
+	String printDensityValue = prop.getProperty("PRINT_DENSITY_VALUE");
+	String printDensityUnit = prop.getProperty("PRINT_DENSITY_UNIT");
+
+	if (StringUtils.isEmpty(printDensityValue) || StringUtils.isEmpty(printDensityUnit))
+	{
+	    setDefaultPrintDensity();
+	}
+	else
+	{
+	    printDensityValue = printDensityValue.trim();
+	    printDensityUnit = printDensityUnit.trim().toLowerCase();
+	    if (!PRINT_DENSITY_UNITS.contains(printDensityUnit))
+	    {
+		setDefaultPrintDensity();
+	    }
+	    else if (!StringUtils.isNumeric(printDensityValue))
+	    {
+		setDefaultPrintDensity();
+	    }
+	    else
+	    {
+		int printDensityIntValue = Integer.parseInt(printDensityValue);
+		if ((printDensityUnit.equals("dpmm") && !PRINT_DENSITY_DPMM_VALUES.contains(printDensityIntValue))
+			|| (printDensityUnit.equals("dpi") && !PRINT_DENSITY_DPI_VALUES.contains(printDensityIntValue)))
+		{
+		    setDefaultPrintDensity();
+		}
+		else
+		{
+		    if (printDensityUnit.equals("dpmm"))
+		    {
+			printDensity = printDensityIntValue + "dpmm";
+		    }
+		    else
+		    {
+			printDensity = PRINT_DENSITY_DPI_DPMM_MAP.get(printDensityIntValue) + "dpmm";
+		    }
+		}
+	    }
+	}
+    }
+
+    private void setDefaultPrintDensity()
+    {
+	info("PRINT_DENSITY_VALUE and PRINT_DENSITY_UNIT could not be read from config. Maybe empty or invalid values.");
+	info("Default value 8 dpmm (203 dpi) will be used for print density.");
+	info("Valid values when PRINT_DENSITY_UNIT is dpmm: \"6 dpmm\", \"8 dpmm\", \"12 dpmm\", and \"24 dpmm\"");
+	info("Valid values when PRINT_DENSITY_UNIT is dpi: \"152 dpi\", \"203 dpi\", \"300 dpi\", and \"600 dpi\"");
+	printDensity = "8dpmm";
     }
 
 }
