@@ -25,8 +25,12 @@ class Labelary implements ISocketListener
     Labelary(Config config)
     {
 	Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
-	WebTarget target = client.target("http://api.labelary.com/v1/printers/" + config.getPrintDensity() + "/labels/4x6/0/");
-	// adjust print density (8dpmm), label width (4 inches), label height (6 inches), and label index (0) as necessary
+	String url = "http://api.labelary.com/v1/printers/"
+		+ config.getPrintDensity() + "/labels/"
+		+ config.getWidth() + "x" + config.getHeight()
+		+ "/0/";
+	info("Labelary URL: " + url);
+	WebTarget target = client.target(url);
 	request = target.request();
 	if (config.isLabelSaveAsPdf())
 	{
