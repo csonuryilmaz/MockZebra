@@ -389,7 +389,7 @@ public class Log
 	    }
 	    if (category != null)
 	    {
-		builder.append(" [");
+		builder.append("[");
 		builder.append(category);
 		builder.append("] ");
 	    }

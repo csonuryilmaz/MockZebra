@@ -6,8 +6,12 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static com.esotericsoftware.minlog.Log.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Level;
 import org.apache.commons.lang3.StringUtils;
 
 class Config
@@ -19,6 +23,8 @@ class Config
     private String printDensity;
     private float width;
     private float height;
+    private String pngViewer;
+    private String pdfViewer;
 
     private final static HashSet<String> PRINT_DENSITY_UNITS = new HashSet<String>()
     {
@@ -86,6 +92,8 @@ class Config
 	    setLabelSaveAsPdf(prop);
 	    setPrintDensity(prop);
 	    setLabelSize(prop);
+	    setPngViewer(prop);
+	    setPdfViewer(prop);
 	}
 	catch (IOException ex)
 	{
@@ -262,6 +270,74 @@ class Config
 	info("Any numeric value may be used for LABEL_SIZE_WIDTH and LABEL_SIZE_HEIGHT");
 	width = 4;
 	height = 6;
+    }
+
+    private void setPngViewer(Properties prop)
+    {
+	if (!labelSaveAsPdf)
+	{
+	    String viewPngWith = prop.getProperty("VIEW_PNG_WITH");
+	    if (!StringUtils.isEmpty(viewPngWith))
+	    {
+		try
+		{
+		    info("Checking is PNG viewer alive? ...");
+		    viewPngWith = viewPngWith.trim();
+
+		    Process process = Runtime.getRuntime().exec(viewPngWith);
+		    if (process.isAlive())
+		    {
+			process.destroy();
+			pngViewer = viewPngWith;
+			info("Success", "PNG viewer: " + pngViewer);
+		    }
+		}
+		catch (IOException ex)
+		{
+		    warn("VIEW_PNG_WITH has invalid command. PNG files will be saved, but won't be viewed. (Silent mode!)");
+		    warn(ex.getMessage());
+		}
+	    }
+	}
+    }
+
+    private void setPdfViewer(Properties prop)
+    {
+	if (labelSaveAsPdf)
+	{
+	    String viewPdfWith = prop.getProperty("VIEW_PDF_WITH");
+	    if (!StringUtils.isEmpty(viewPdfWith))
+	    {
+		try
+		{
+		    info("Checking is PDF viewer alive? ...");
+		    viewPdfWith = viewPdfWith.trim();
+
+		    Process process = Runtime.getRuntime().exec(viewPdfWith);
+		    if (process.isAlive())
+		    {
+			process.destroy();
+			pdfViewer = viewPdfWith;
+			info("Success", "PDF viewer: " + pdfViewer);
+		    }
+		}
+		catch (IOException ex)
+		{
+		    warn("VIEW_PDF_WITH has invalid command. PDF files will be saved, but won't be viewed. (Silent mode!)");
+		    warn(ex.getMessage());
+		}
+	    }
+	}
+    }
+
+    String getPngViewer()
+    {
+	return pngViewer;
+    }
+
+    String getPdfViewer()
+    {
+	return pdfViewer;
     }
 
 }

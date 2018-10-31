@@ -3,10 +3,12 @@ package mockzebra;
 import static com.esotericsoftware.minlog.Log.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -21,6 +23,7 @@ class Labelary implements ISocketListener
 
     private final Invocation.Builder request;
     private final String extension;
+    private final String fileViewer;
 
     Labelary(Config config)
     {
@@ -36,11 +39,13 @@ class Labelary implements ISocketListener
 	{
 	    request.accept("application/pdf");
 	    extension = "pdf";
+	    fileViewer = config.getPdfViewer();
 	}
 	else
 	{
 	    request.accept("image/png");
 	    extension = "png";
+	    fileViewer = config.getPngViewer();
 	}
     }
 
@@ -90,12 +95,50 @@ class Labelary implements ISocketListener
 	    File file = new File(labelPath);
 	    Files.write(file.toPath(), body);
 	    info("Label saved as " + messageId + "." + extension + " in workspace.");
+	    viewLabel(labelPath);
 	}
 	catch (IOException ex)
 	{
 	    warn("Label could not be saved as:" + labelPath);
 	    warn(ex.getMessage());
 	}
+    }
+
+    private void viewLabel(String labelPath)
+    {
+	String viewCommand = fileViewer + " " + labelPath;
+	try
+	{
+	    Process process = Runtime.getRuntime().exec(viewCommand);
+	    if (process.isAlive())
+	    {
+		int pid = tryGetPid(process);
+		info("Label viewed with " + fileViewer + "." + (pid > 0 ? " pid:" + pid : ""));
+	    }
+	}
+	catch (IOException ex)
+	{
+	    warn("Failed", viewCommand);
+	    warn(ex.getMessage());
+	}
+    }
+
+    private int tryGetPid(Process process)
+    {
+	if (process.getClass().getName().equals("java.lang.UNIXProcess"))
+	{
+	    try
+	    {
+		Field f = process.getClass().getDeclaredField("pid");
+		f.setAccessible(true);
+		return f.getInt(process);
+	    }
+	    catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e)
+	    {
+	    }
+	}
+
+	return 0;
     }
 
 }
