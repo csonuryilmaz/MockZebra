@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.logging.Level;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -16,6 +15,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 class Labelary implements ISocketListener
@@ -106,20 +106,23 @@ class Labelary implements ISocketListener
 
     private void viewLabel(String labelPath)
     {
-	String viewCommand = fileViewer + " " + labelPath;
-	try
+	if (!StringUtils.isEmpty(fileViewer))
 	{
-	    Process process = Runtime.getRuntime().exec(viewCommand);
-	    if (process.isAlive())
+	    String viewCommand = fileViewer + " " + labelPath;
+	    try
 	    {
-		int pid = tryGetPid(process);
-		info("Label viewed with " + fileViewer + "." + (pid > 0 ? " pid:" + pid : ""));
+		Process process = Runtime.getRuntime().exec(viewCommand);
+		if (process.isAlive())
+		{
+		    int pid = tryGetPid(process);
+		    info("Label viewed with " + fileViewer + "." + (pid > 0 ? " pid:" + pid : ""));
+		}
 	    }
-	}
-	catch (IOException ex)
-	{
-	    warn("Failed", viewCommand);
-	    warn(ex.getMessage());
+	    catch (IOException ex)
+	    {
+		warn("Failed", viewCommand);
+		warn(ex.getMessage());
+	    }
 	}
     }
 

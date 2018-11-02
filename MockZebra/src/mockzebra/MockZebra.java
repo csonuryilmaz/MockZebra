@@ -10,7 +10,7 @@ import org.apache.commons.cli.ParseException;
 public class MockZebra
 {
 
-    private final static String VERSION = "0.2.0.0";
+    private final static String VERSION = "1.0.0.0";
 
     public static void main(String[] args)
     {
