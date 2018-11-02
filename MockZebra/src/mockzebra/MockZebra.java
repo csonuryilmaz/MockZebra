@@ -81,7 +81,7 @@ public class MockZebra
 		+ "Releases: https://github.com/csonuryilmaz/MockZebra/releases" + help.getNewLine()
 		+ "Issues: https://github.com/csonuryilmaz/MockZebra/issues" + help.getNewLine()
 		+ help.getNewLine() + "Happy coding!" + help.getNewLine(),
-		 true);
+		true);
 	System.exit(0);
     }
 
@@ -96,8 +96,7 @@ public class MockZebra
 
     private static void run(CommandLine cmdLine)
     {
-	info("Welcome to MockZebra App! (v " + VERSION + ")");
-
+	info("Welcome to MockZebra App!");
 	Config config = new Config(getConfigFile(cmdLine));
 	Socket socket = new Socket(config);
 	Labelary labelary = new Labelary(config);

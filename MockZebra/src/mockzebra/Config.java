@@ -100,7 +100,9 @@ class Config
 	}
 	catch (IOException ex)
 	{
-	    error(file + " not found in " + workspace + " or file format is incompatible!", ex);
+	    warn("Config File", file + " not found in " + workspace + " or file format is incompatible!");
+	    warn("Config File", ex.getMessage());
+	    error("Please check out documentation at homepage for details >> https://github.com/csonuryilmaz/MockZebra");
 	}
     }
 
