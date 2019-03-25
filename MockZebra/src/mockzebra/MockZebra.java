@@ -101,6 +101,8 @@ public class MockZebra
 	Socket socket = new Socket(config);
 	Labelary labelary = new Labelary(config);
 	labelary.listen(socket);
+        Database database = new Database(config);
+        database.listen(socket);
     }
 
     private static String getConfigFile(CommandLine cmdLine)

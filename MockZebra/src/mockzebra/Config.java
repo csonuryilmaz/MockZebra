@@ -21,6 +21,12 @@ class Config
     private float height;
     private String pngViewer;
     private String pdfViewer;
+    
+    private String databaseUrl;
+    private String databaseUser;
+    private String databasePassword;
+    private String databaseTable;
+    private String databaseZplDataColumn;
 
     private final static HashSet<String> PRINT_DENSITY_UNITS = new HashSet<String>()
     {
@@ -97,6 +103,12 @@ class Config
 	    setLabelSize(prop);
 	    setPngViewer(prop);
 	    setPdfViewer(prop);
+            
+            setDatabaseUrl(prop);
+            setDatabaseUser(prop);
+            setDatabasePassword(prop);
+            setDatabaseTable(prop);
+            setDatabaseZplDataColumn(prop);
 	}
 	catch (IOException ex)
 	{
@@ -104,6 +116,51 @@ class Config
 	    warn("Config File", ex.getMessage());
 	    error("Please check out documentation at homepage for details >> https://github.com/csonuryilmaz/MockZebra");
 	}
+    }
+    
+    private void setDatabaseUrl(Properties prop) {
+        databaseUrl = prop.getProperty("DATABASE_URL");
+	info("DATABASE_URL", prop.getProperty("DATABASE_URL"));
+    }
+    
+    String getDatabaseUrl() {
+        return databaseUrl;
+    }
+
+    private void setDatabaseUser(Properties prop) {
+        databaseUser = prop.getProperty("DATABASE_USER");
+	info("DATABASE_USER", prop.getProperty("DATABASE_USER"));
+    }
+    
+    String getDatabaseUser() {
+        return databaseUser;
+    }
+
+    private void setDatabasePassword(Properties prop) {
+        databasePassword = prop.getProperty("DATABASE_PASSWORD");
+	info("DATABASE_PASSWORD", StringUtils.repeat("*", prop.getProperty("DATABASE_PASSWORD").length()));
+    }
+    
+    String getDatabasePassword() {
+        return databasePassword;
+    }
+
+    private void setDatabaseTable(Properties prop) {
+        databaseTable = prop.getProperty("DATABASE_TABLE");
+	info("DATABASE_TABLE", prop.getProperty("DATABASE_TABLE"));
+    }
+    
+    String getDatabaseTable() {
+        return databaseTable;
+    }
+
+    private void setDatabaseZplDataColumn(Properties prop) {
+        databaseZplDataColumn = prop.getProperty("DATABASE_ZPL_DATA_COLUMN");
+	info("DATABASE_ZPL_DATA_COLUMN", prop.getProperty("DATABASE_ZPL_DATA_COLUMN"));
+    }
+    
+    String getDatabaseZplDataColumn() {
+        return databaseZplDataColumn;
     }
 
     private void setPort(Properties prop)

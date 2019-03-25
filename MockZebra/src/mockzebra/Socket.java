@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.TimeZone;
 
 class Socket
@@ -19,7 +20,7 @@ class Socket
 
     private String workspace;
 
-    private ISocketListener listener;
+    private LinkedList<ISocketListener> listeners = new LinkedList<>();
 
     Socket(Config config)
     {
@@ -65,7 +66,7 @@ class Socket
 			info("Message is got, " + messageId + ".zpl flushing to file ...");
 			saveMessage(messageId, buffer.toString());
 			info("" + messageId + ".zpl saved.");
-			if (listener != null)
+			for (ISocketListener listener : listeners)
 			{
 			    listener.messageGot(messageId, workspace, messageId + ".zpl");
 			}
@@ -138,7 +139,7 @@ class Socket
 
     void setListener(ISocketListener listener)
     {
-	this.listener = listener;
+	listeners.add(listener);
     }
 
 }
